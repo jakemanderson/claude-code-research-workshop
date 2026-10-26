@@ -1,0 +1,14 @@
+{
+  "name": "claude-code-research-workshop",
+  "owner": {
+    "name": "Jake Anderson"
+  },
+  "plugins": [
+    {
+      "name": "research-checks",
+      "source": "./research-checks",
+      "description": "Checker agents and research skills for using Claude Code in research."
+    }
+  ],
+  "description": "Plugins for using Claude Code in research."
+}

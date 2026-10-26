@@ -1,0 +1,8 @@
+{
+  "name": "research-checks",
+  "description": "Checker agents and research skills for using Claude Code in research: referee, data profiler, replicator, citation checker, number checker, /proof-of-concept, /lit-search, /ingest-paper.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Jake Anderson"
+  }
+}
