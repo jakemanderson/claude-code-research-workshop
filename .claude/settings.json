@@ -16,6 +16,15 @@
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-raw.sh"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/reports-only.sh"
+          }
+        ]
       }
     ]
   }

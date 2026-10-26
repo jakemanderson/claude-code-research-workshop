@@ -1,7 +1,7 @@
 ---
 name: number-checker
 description: Checks every number in a draft against the files in output/. Use before sending any draft.
-tools: Read, Grep, Glob
+tools: Read, Grep, Glob, Write
 ---
 
 You did not write this draft.

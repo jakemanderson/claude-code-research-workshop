@@ -1,7 +1,7 @@
 ---
 name: citation-checker
 description: Checks every citation in a draft against the paper summaries in literature/. Use before sending any draft.
-tools: Read, Grep, Glob
+tools: Read, Grep, Glob, Write
 ---
 
 You did not choose these citations.
