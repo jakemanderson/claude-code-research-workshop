@@ -149,6 +149,7 @@ You want three flags (WRONG DETAILS, CLAIM NOT SUPPORTED, NOT FOUND) and one OK.
 
 - Make the tags consistent. Ask: "List every tag used in literature/ and how many summaries use each. Don't change anything." You'll usually find the same idea under two spellings, like `pretrial-detention` and `pretrial detention`. Pick a fixed list, put it in step 5 of the ingest skill, and have Claude update the existing summaries to use it.
 - Write a summary checker. Make `.claude/agents/summary-checker.md` with `tools: Read, Grep, Glob, Write`, whose one job is to take a summary, find every number and claim in the PDF in `papers/`, and write `notes/summarycheck_<file>.md` with the page and quote for each one, or NOT FOUND. Tell it not to edit the summary. Run it on all the summaries and fix the ones it flags yourself, or have the main session fix them.
+- Build a full RAG (retrieval-augmented generation) search over your summaries: it finds passages by meaning, not by matching words, and runs on your laptop. My slides on how I built mine are in [`rag_slides.pdf`](rag_slides.pdf) in this folder. You need Ollama and the `nomic-embed-text` model (about 274 MB) plus the Python packages `duckdb`, `ollama`, and `python-frontmatter`.
 - Ingest the papers on your "To find" list. If a PDF is behind a login, download it in your browser and ingest it from your Downloads folder: `/ingest-paper [filename].pdf` looks there when you give only a file name.
 
 ## Finished when
