@@ -2,7 +2,7 @@
 
 Build a library of 10–20 papers you can search, where every paper has a summary with the same sections, and every citation Claude gives you can be checked against those summaries.
 
-I have about 800 papers summarized this way. When I asked Claude for papers from memory on jail populations during COVID, 41 of 43 citations were real, with the right authors, year, and title. That sounds good, but you can't tell which 2 are wrong without checking every one, and one of them was a paper that doesn't exist, by real authors who work on that topic. When the agents in my experiment had the library and a rule to cite only from it, none of them cited a paper outside it. On my immigration bond project, four search agents went through the literature and found that nobody had used bond-judge assignment as an instrument. Some papers were behind a login, so Claude couldn't get them; I downloaded those in Chrome myself and had Claude ingest them. Because every summary has the same sections, a search agent can compare identification strategies across papers: the design is always under the same heading.
+I have about 800 papers summarized this way. When I asked Claude for papers from memory on jail populations during COVID, 41 of 43 citations were real, with the right authors, year, and title. That sounds good, but you can't tell which 2 are wrong without checking every one, and one of them was a paper that doesn't exist, by real authors who work on that topic. On my immigration bond project, four search agents went through the literature and found that nobody had used bond-judge assignment as an instrument. Some papers were behind a login, so Claude couldn't get them; I downloaded those in Chrome myself and had Claude ingest them. Because every summary has the same sections, a search agent can compare identification strategies across papers: the design is always under the same heading.
 
 Claude gets most of a summary right and some numbers wrong, so a big part of this track is checking a few summaries against the PDFs before you trust the rest.
 
@@ -10,20 +10,18 @@ Claude gets most of a summary right and some numbers wrong, so a big part of thi
 
 - 10–20 PDFs of papers you know well. Papers you know well matter more than the number: you'll check the summaries against your own memory, and you'll test the search with a question you already know the answer to.
 - Claude Code installed and logged in. Ingesting 15 long papers uses a lot of tokens; on a Pro plan you may hit the usage limit, so start with 10.
-- A copy of the workshop kit (`CLAUDE.md` and the `.claude/` folder).
-
-If you don't have PDFs with you, use the example set: `examples/papers.md` in this folder lists 12 papers on pretrial detention and bail, each with a link to a free PDF (working-paper versions from NBER, IZA, and the authors' sites, plus law review and open-access journal articles). Download them into `papers_to_add/` in your browser. The search question and the paragraph with planted mistakes in steps 6 and 7 are written for this set.
+- The workshop kit cloned into `~/Documents/claude-code-research-workshop`. You'll copy its `.claude/` folder.
 
 ## Steps
 
 ### 1. Set up the folder (10 min)
 
-Make a new folder for the library and copy the kit into it:
+Make a new folder for the library and copy the kit's `.claude/` folder into it:
 
 ```
 mkdir -p ~/research/lit_library/papers_to_add
-cp -R path/to/workshop_kit/.claude path/to/workshop_kit/CLAUDE.md ~/research/lit_library/
 cd ~/research/lit_library
+cp -R ~/Documents/claude-code-research-workshop/.claude .
 mkdir -p literature notes papers
 ```
 
@@ -35,11 +33,7 @@ chmod -R a-w papers_to_add
 
 This is principle 1, keep your work apart from the AI's. `papers_to_add/` is yours. `papers/` (renamed copies) and `literature/` (summaries) are written by Claude. The skill copies each PDF and never moves it, but making the folder read-only means you don't have to trust that.
 
-Open `CLAUDE.md` and change the first lines to your project. The skill uses the Question line: at the end of each ingest it tells you in two sentences how the paper relates to it. Keep the rule "Cite only papers that have a summary in `literature/`." Delete the parts about the jail data if they don't apply to you. If you're using the example set, set the question to:
-
-```
-Question: How does pretrial detention affect case outcomes, and what happens when bail is reduced or removed?
-```
+Write your own `CLAUDE.md` in this folder. Start it with a title for your project and a Question line, like `Question: How does pretrial detention affect case outcomes?` The skill uses the Question line: at the end of each ingest it tells you in two sentences how the paper relates to it. Add the folders above and what each one is for, and the rule "Cite only papers that have a summary in `literature/`."
 
 Then start Claude Code from the folder:
 
@@ -98,7 +92,7 @@ You can run `/ingest-paper` on each PDF one at a time; it's slow but you see eac
 Ingest every PDF in papers_to_add/ that doesn't have a summary in literature/ yet. For each one, follow .claude/skills/ingest-paper/SKILL.md exactly. Use one subagent per paper, at most 4 at a time. At the end give me a table: original file, new file name, summary file, and anything you weren't sure about.
 ```
 
-A subagent is a separate Claude session that gets one job and reports back. Here each one reads one paper, so the long PDFs don't fill up your main session. The kit's `CLAUDE.md` says to use plan mode for anything that changes more than one file, so Claude may show you a plan first; read it, check it covers every PDF, and approve it.
+A subagent is a separate Claude session that gets one job and reports back. Here each one reads one paper, so the long PDFs don't fill up your main session. If your `CLAUDE.md` says to use plan mode for anything that changes more than one file, Claude may show you a plan first; read it, check it covers every PDF, and approve it.
 
 While it runs, pick a second paper you know well and check its summary the way you did in step 3. When it's done, check:
 
@@ -118,12 +112,6 @@ Then run:
 /lit-search [your question]
 ```
 
-With the example set, use:
-
-```
-/lit-search Does pretrial detention change case outcomes such as conviction and guilty pleas?
-```
-
 The skill searches the titles, tags, and research-question sections in `literature/`, and writes `notes/lit_<date>.md` with a table of papers (paper, file, what it does, how it relates to the question), a "To find" list, and two or three sentences on what would be new. Then it hands the file to the `citation-checker` agent and fixes or removes anything the checker flags.
 
 Check:
@@ -135,12 +123,12 @@ Check:
 
 ### 7. Test the checker with mistakes you planted (10 min)
 
-A checker that says everything is OK hasn't shown you anything until you've seen it catch a mistake. Write a short paragraph in `notes/check_me.md` that cites four papers from your library, and put in three mistakes you know about: one wrong year, one number that's different from the summary, and one paper that isn't in your library at all. Keep one citation correct. With the example set, copy `examples/check_me.md` from this track's folder into your `notes/` folder instead.
+A checker that says everything is OK hasn't shown you anything until you've seen it catch a mistake. You know where the mistakes are in a paragraph you wrote yourself, so you can tell exactly what the checker caught and what it missed. Write a short paragraph in `notes/check_me.md` that cites four papers from your library, and put in three mistakes: one wrong year, one claim the paper doesn't make, and one paper that isn't in your library at all. Keep the fourth citation correct.
 
 Then ask:
 
 ```
-Use the citation-checker agent on notes/check_me.md.
+Use the citation-checker agent on notes/check_me.md. Don't change check_me.md.
 ```
 
 You want three flags (WRONG DETAILS, CLAIM NOT SUPPORTED, NOT FOUND) and one OK. If it misses one, read the agent file `.claude/agents/citation-checker.md` and add a specific thing to check, then run it again. The checker compares against the summaries, not the PDFs, so it can't catch a number that's wrong in the summary itself. That's why step 3 matters.

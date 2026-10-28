@@ -6,54 +6,52 @@ Before my immigration bond paper goes out, I want other readers to go through it
 
 ## Before you start
 
-Bring one of these:
+Bring your own draft (paper, chapter, or slides) as a `.md`, `.tex`, or `.txt` file. Agents read plain text best. A PDF works, but Claude reads it more slowly and can miss table contents. If the draft draws on results files (CSVs, logs) or paper summaries, bring those too. Also bring one task you do often, like formatting a regression table, writing table notes, or writing a data appendix.
 
-- Your own draft (paper, chapter, or slides) as a `.md`, `.tex`, or `.txt` file. Agents read plain text best. A PDF works, but Claude reads it more slowly and can miss table contents. Also bring one task you do often, like formatting a regression table, writing table notes, or writing a data appendix.
-- Or use the practice paper in this folder: `examples/practice_paper/`. It's a made-up 4-page paper on pretrial release reform and county jail populations, with three tables, the output files the numbers come from, and a small `literature/` folder. I planted 10 problems in it. The answer key is not in this repo, so neither you nor your agent can see it. Ask me for it after your first run.
-
-If you use your own draft, write down 3 problems you already know are in it before you start. That's your answer key. Testing the agent on problems you already know about is the only way to tell whether it's finding things or just sounding confident.
+Before you start, write down the problems you already know are in the draft, about 5 to 10, in `~/Documents/known_problems.md`. Keep this file outside the project folder so the agent can't read it. You can only score a reviewer on problems you already know about, so this list is your answer key. Without it you can't tell whether the agent is finding things or just sounding confident.
 
 ## Steps
 
 ### 1. Setup (10 min)
 
-1. Copy the practice folder somewhere outside the repo, add the kit's `.claude/` folder, and start Claude there. From the folder that holds the repo:
+1. Make a project folder for your draft, add the kit's `.claude/` folder, and start Claude there:
 
    ```
-   cp -r claude-code-research-workshop/tracks/4-agents-and-skills/examples/practice_paper ~/track4
-   cp -r claude-code-research-workshop/.claude ~/track4/
-   cd ~/track4
+   mkdir ~/Documents/track4 && cd ~/Documents/track4
+   mkdir draft notes output literature
+   cp ~/path/to/your/draft.tex draft/
+   cp -R ~/Documents/claude-code-research-workshop/.claude .
    claude
    ```
 
-   With your own draft, use your project folder instead (set up as in Track 1), and put the draft in a folder like `draft/`.
+   Change `~/path/to/your/draft.tex` to where your draft is. Copy any results files into `output/` and any paper summaries into `literature/`. If you already have a project folder from Track 1, you can use that instead and put the draft in `draft/`.
 
 2. Check that Claude sees the kit. Type `/agents`. You should see `referee`, `data-profiler`, `replicator`, `citation-checker`, and `number-checker`. If you don't, you started `claude` from the wrong folder. Exit and `cd` into the folder that has `.claude/` in it.
 
-3. Look at the files. The practice folder has `CLAUDE.md` (the project rules), `draft/paper.md`, `output/` (the regression results and logs), `literature/` (paper summaries), and an empty `notes/`. Read `CLAUDE.md` and skim the paper so you know what the agent will be reading.
+3. Look at the files. Your folder has `draft/`, `output/`, `literature/`, an empty `notes/`, and `.claude/`. Skim your draft so you know what the agent will be reading.
 
 4. Open `.claude/agents/referee.md` in your editor. Every agent file has six parts: a description (when to use it), a role (who it is, and that it didn't write this), a checklist, limits (what it must not do or claim), tools, and where the output goes. You'll write the same six parts.
 
 ### 2. A plain request first (5 min)
 
-Before writing an agent, see what you get without one. Type:
+Before writing an agent, see what you get without one. Type (with your draft's file name):
 
 ```
-Check draft/paper.md for problems. Don't edit anything.
+Check draft/paper.tex for problems. Don't edit anything.
 ```
 
-Copy the list it gives you into `notes/baseline.md` (or ask: `Save the list you just gave me to notes/baseline.md`). Count the problems. You'll compare this to your agent later. A plain request usually finds a few things and misses whole kinds of problems, because nothing tells it what kind of problems to look for.
+Copy the list it gives you into `~/Documents/baseline.md` (or ask: `Save the list you just gave me to ~/Documents/baseline.md`). Save it outside the project folder, because the agent reads files in the project, and if it reads this list first, the comparison is meaningless. Count the problems. You'll compare this to your agent later. A plain request usually finds a few things and misses whole kinds of problems, because nothing tells it what kind of problems to look for.
 
 ### 3. Write your agent (15 min)
 
-Pick one job. One. The practice paper has problems for each of these, and each kind of reviewer should catch a different subset:
+Pick one job. One. Each kind of reviewer should catch a different subset of the problems in your draft:
 
 | Reviewer | Its one job |
 |---|---|
 | Econometrician | Identification, standard errors and clustering, whether the tables support each claim in the text |
 | Numbers and tables | Every number in the text matches the tables, and every table matches the files in `output/` |
 | Citations | Every citation has a summary in `literature/`, and the sentence says what the summary says |
-| Domain expert | How jails, bail, and the data actually work (for your own draft: your field's institutions) |
+| Domain expert | How your field's institutions and data actually work |
 | Formatting nitpicker | Table and figure references, minus signs, decimals, abbreviations, typos |
 | Non-technical reader | Could a reporter or a policymaker follow it? Where would they get lost? |
 
@@ -98,10 +96,10 @@ The agent gets Write so it can save its report, and nothing else. That's princip
 Type:
 
 ```
-Use the econometrician agent on draft/paper.md
+Use the econometrician agent on draft/paper.tex
 ```
 
-(Use your agent's name.) You'll see Claude start the agent; it reads files in its own context and sends back a report. If you see Claude reading the paper itself without starting the agent, stop it with Esc and say `Use the econometrician agent for this, don't review it yourself.`
+(Use your agent's name and your draft's file name.) You'll see Claude start the agent; it reads files in its own context and sends back a report. If you see Claude reading the paper itself without starting the agent, stop it with Esc and say `Use the econometrician agent for this, don't review it yourself.`
 
 Check the report in `notes/`:
 
@@ -118,19 +116,18 @@ Things that usually go wrong:
 
 ### 5. Score it (10 min)
 
-Practice paper: ask me for the answer key. It lists the 10 planted problems and which kind of reviewer should catch each, 2 things in the paper that look wrong but are correct, and a list of real issues I didn't plant that are fair to flag. Fill in:
+Open `~/Documents/known_problems.md` and the agent's report side by side. Fill in:
 
 | | Count |
 |---|---|
-| Planted problems your agent found (out of 10) | |
-| Planted problems in its job that it missed | |
-| Things it flagged that are on the "fair to flag" list | |
-| Things it flagged that are wrong (including the 2 decoys) | |
-| Planted problems the plain request in step 2 found | |
+| Known problems your agent found (out of your list) | |
+| Known problems in its job that it missed | |
+| Other things it flagged that are real problems | |
+| Things it flagged that are wrong | |
+| Things it flagged that you can't tell yet | |
+| Known problems the plain request in step 2 found | |
 
-Your own draft: check the report against the 3 problems you wrote down, and check every other point it raised: real, not real, or can't tell.
-
-Compare with someone who wrote a different kind of reviewer. You should find that each kind catches a different set, and none catches all 10. That's the reason to run several narrow reviewers instead of one general one.
+Compare with someone who wrote a different kind of reviewer. You should find that each kind catches a different set, and none catches everything. That's the reason to run several narrow reviewers instead of one general one. If one of them found a real problem you didn't know about, add it to `known_problems.md`.
 
 ### 6. Make it better and run it again (15 min)
 
@@ -140,19 +137,19 @@ For each wrong flag, add a limit, for example "Don't call a difference between t
 
 Then run it again; the new report goes to `notes/review_2.md`. Score it the same way. If it got worse, look at what you changed. Long checklists can push the agent to skim; keep each item to one line.
 
-If you have time, also run it on a different file, like a section of your own work. An agent that only works on the practice paper isn't much use.
+If you have time, also run it on a different file, like another section or another paper of yours. An agent that only works on the draft you tuned it on isn't much use.
 
 ### 7. Do a task once by hand (10 min)
 
-Pick a task you repeat. For the practice paper, use making a regression table from a results file. Type:
+Pick a task you repeat. If you have a results file, making a regression table from it works well. For example (change the file names and the format to yours):
 
 ```
-Make a markdown table from output/did_results.csv in the format of Table 2 in draft/paper.md: three decimals, real minus signs (−, not -), standard errors in parentheses under each estimate, stars from the p-values (* p<0.10, ** p<0.05, *** p<0.01), and a note that gives the sample, N, the estimator, the fixed effects, and the clustering level. Write it to output/tables/table2.md. Don't edit anything in draft/.
+Make a markdown table from output/results.csv in the format of Table 2 in draft/paper.tex: three decimals, real minus signs (−, not -), standard errors in parentheses under each estimate, stars from the p-values (* p<0.10, ** p<0.05, *** p<0.01), and a note that gives the sample, N, the estimator, the fixed effects, and the clustering level. Write it to output/tables/table2.md. Don't edit anything in draft/.
 ```
 
 Check the table yourself. Do the stars match the p-values in the CSV? Are there any hyphens left where minus signs should be? Does the note say everything you asked for? Correct it in the chat until it's right ("the note is missing the number of clusters"). The corrections are the useful part: they become steps in the skill.
 
-With your own task, do it the same way: describe it fully, check the result, correct it.
+With a different task, do it the same way: describe it fully, check the result, correct it.
 
 ### 8. Turn it into a skill (8 min)
 
@@ -171,10 +168,10 @@ Open the file and edit it:
 
 ### 9. Test it in a new session (7 min)
 
-Exit and start a fresh `claude` in the same folder. The session where you wrote the skill already knows everything you told it, so it isn't a real test. Type:
+Exit and start a fresh `claude` in the same folder. The session where you wrote the skill already knows everything you told it, so it isn't a real test. Type (with another of your results files):
 
 ```
-/regtable output/event_study.csv
+/regtable output/other_results.csv
 ```
 
 Use a different file from the one you built it on. Check the output with the same questions as step 7. Whatever it gets wrong, fix in `SKILL.md` (not in the chat), and run it again in another new session.
@@ -186,6 +183,6 @@ Use a different file from the one you built it on. Check the output with the sam
 
 ## Finished when
 
-- `notes/review_1.md` and `notes/review_2.md` exist, and you've written down how many known problems each one found (out of 10 for the practice paper, out of your 3 for your own draft).
+- `notes/review_1.md` and `notes/review_2.md` exist, and you've written down how many of the problems in `~/Documents/known_problems.md` each one found.
 - Your agent file has only read tools, and its checklist has at least one line you added after the first run.
 - `/<your skill> <a different file>` works in a new session with no extra instructions from you.

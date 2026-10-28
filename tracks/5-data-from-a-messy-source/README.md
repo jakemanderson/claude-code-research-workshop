@@ -6,7 +6,7 @@ A lot of my empirical work starts with collecting data from government websites 
 
 ## Before you start
 
-- A laptop with Claude Code working, and Python 3 with pandas. Depending on the source you'll also need `requests` and one of `pdfplumber` (PDFs) or `beautifulsoup4` and `lxml` (web pages). Claude will ask to install them; say yes, or run `pip install requests pdfplumber beautifulsoup4 lxml` yourself first.
+- A laptop with Claude Code working, and Python 3 (type `python3 --version` in the terminal to check). In step 1 you'll install pandas, `requests`, `pdfplumber` (for PDFs), and `beautifulsoup4` and `lxml` (for web pages) into a virtual environment for this track.
 - Your own source, if you have one: the URL of the PDF, page, or API, and the table you want at the end (what one row is, and which columns).
 - One number from the source that you can read with your own eyes, for example a total for one year. This is your check number. If you can't name one, pick a different source.
 - If you want to use the Census API, get a key before the session at https://api.census.gov/data/key_signup.html (free, sent by email). When I tested on 10/26/2026, requests without a key were sent to a "Missing Key" page. IPUMS needs an account and an extract request that can take a while to process, so set that up in advance too, or pick one of the examples below.
@@ -24,7 +24,7 @@ If you don't bring your own, pick one of these three. I checked each URL and eac
 
 Notes on each:
 
-- A connects to the kit's `CLAUDE.md`, which is about US jail populations; the 734,500 is the BJS 2019 number the kit's plan checks against. The table has a † after many numbers (a significance marker), headers that run over several lines, and percent-change rows under the years. The "Reference dates" section on page 11 says something the table note doesn't: in 2015 and 2016 the counts by race were taken on December 31 and scaled up to midyear.
+- A: the table has a † after many numbers (a significance marker), headers that run over several lines, and percent-change rows under the years. The "Reference dates" section on page 11 says something the table note doesn't: in 2015 and 2016 the counts by race were taken on December 31 and scaled up to midyear.
 - B needs a list of the 58 California county codes. BLS publishes it at https://download.bls.gov/pub/time.series/la/la.area (rows that start with `F` and `CN06`). That server refused requests from a plain script and from a browser-style header when I tried, and accepted them once the User-Agent header had a contact email in it, so tell Claude to put your email in that header. Version 1 of the API takes at most 25 series and 10 years per request and has a low daily limit, so this table needs 3 requests; don't let the script retry in a loop. The series ID for a county is `LAU` + the area code + `03` (for example `LAUCN060370000000003` is Los Angeles County).
 - C is a plain HTML table with several traps. The rows mix the United States total, 4 regions, the states, two school systems run by federal agencies (Bureau of Indian Education and DoDEA, the Defense Department's schools), and 5 territories; the United States total includes only the 50 states and DC, so adding up every row in the state section counts some students twice and others who aren't in the total. From fall 2019 on, each number has a separate cell next to it for a footnote marker, so there are more cells in a row than year headers. One footnote is glued to a name ("DoDEA2"), missing values are `---`, `#` means a percent change that rounds to zero, and the fall 2023 United States number has no commas.
 
@@ -32,12 +32,23 @@ Notes on each:
 
 ### 1. Set up the folder (10 min)
 
-Make a new folder for this track and copy the kit's `CLAUDE.md` and `.claude/` folder into it. Make the folders `data/raw/`, `data/clean/`, `code/`, `output/`, and `notes/`. Start `claude` from that folder.
-
-Edit `CLAUDE.md` so it describes this project. Replace the question with one line about the table you're building, and replace the Data section with the source: its URL, today's date, and what one row of your target table is. Keep the Rules section. You can ask Claude to draft it:
+Make a new folder for this track, copy the kit's `.claude/` folder into it, and make the subfolders. Then make a virtual environment (a private copy of Python for this folder, so the packages you install don't change the rest of your computer) and install the packages into it:
 
 ```
-I'm building a table from [source URL]. One row is [one year / one county-month / one state-year]. Read CLAUDE.md and suggest edits to the Question and Data sections for this project. Don't change anything yet.
+mkdir -p ~/research/track5
+cd ~/research/track5
+cp -R ~/Documents/claude-code-research-workshop/.claude .
+mkdir -p data/raw data/clean code output notes
+python3 -m venv .venv
+.venv/bin/pip install pandas requests pdfplumber beautifulsoup4 lxml
+```
+
+The install can take a few minutes. Start `claude` from that folder.
+
+Write your own `CLAUDE.md` in this folder; don't copy the kit's, which is for a different project. Start it with one line about the table you're building. Add a Data section with the source: its URL, today's date, and what one row of your target table is. Add a Rules section: never edit, move, or overwrite anything in `data/raw/`; print the row count after every step and save the log to `output/logs/`; if a check fails, say so first; run scripts with `.venv/bin/python`. You can ask Claude to draft it:
+
+```
+I'm building a table from [source URL]. One row is [one year / one county-month / one state-year]. Draft a CLAUDE.md for this project with a one-line description of the table, a Data section for the source, and a Rules section. Show it to me; don't write the file yet.
 ```
 
 The kit's `.claude/settings.json` and `.claude/hooks/protect-raw.sh` stop Claude from editing anything in `data/raw/` with its edit tools or with shell commands like `sed -i`, `>`, `mv`, or `cp`. They don't stop a Python script from writing there. That's what you want for downloads, but it also means a buggy script could overwrite a raw file, which is why step 3 asks for a script that never overwrites.
@@ -144,7 +155,7 @@ If something doesn't match, find out which side is wrong before changing anythin
 
 Add a `notes/decisions.md` with each choice you made (principle 5): what you chose, what you didn't, and why. For example: "Dropped the † markers; they mark significance, not a different value." "Kept 2015–2016 race counts as BJS published them (year-end counts scaled to midyear); flag them in any figure." Point to the file from `CLAUDE.md` so the next session reads it.
 
-Then rebuild from scratch to show the table comes from the scripts alone: delete `data/clean/[name].csv` yourself in your terminal (the kit blocks Claude from running `rm`), run `python code/02_parse.py`, and check that you get the same file and the checks still pass.
+Then rebuild from scratch to show the table comes from the scripts alone: delete `data/clean/[name].csv` yourself in your terminal (the kit blocks Claude from running `rm`), run `.venv/bin/python code/02_parse.py`, and check that you get the same file and the checks still pass.
 
 ## If you finish early
 

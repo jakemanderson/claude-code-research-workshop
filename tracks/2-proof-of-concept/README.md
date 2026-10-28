@@ -10,34 +10,23 @@ Bring:
 
 - A research question, in one or two sentences.
 - One data file that could answer it, and its codebook. A file you already know well is best, since you'll be checking Claude's reading of it.
-- Claude Code installed and logged in, Python with pandas, and `jq` (the kit's hook that protects `data/raw/` needs it; on a Mac, `brew install jq`).
+- Claude Code installed and logged in, `python3` with pandas, and `jq` (the kit's hook that protects `data/raw/` needs it; on a Mac, `brew install jq`).
+- The workshop repo cloned into `~/Documents/claude-code-research-workshop`.
 
-If you don't have your own idea and data, use the example: "Did State A's minimum wage increase reduce employment at fast-food restaurants?" State A raised its minimum wage from $6.80 to $8.08 an hour, and State B's stayed at $6.80. 410 fast-food restaurants in the two states were surveyed twice, about a month before the increase and about eight months after. It's the data from the replication test in the talk, with the states, dollar amounts, chain names, variable names and row order changed. The example files for this track will be in `tracks/2-proof-of-concept/examples/`: `data/` (the four data files), `idea.md` (the idea, filled in) and `CLAUDE.md` (a project file for this example).
-
-The data are disguised because Claude has read about the original study many times. When I first gave agents the original data, all six returned the published number in three tool calls without opening the questionnaires, so they were remembering the paper, not reading the data. Don't tell Claude where the data come from, and don't look up the original study until the end. At each step, ask whether a choice came from a file in your folder or from memory.
+Claude may already know about well-known datasets and the papers that used them. At each step, ask whether a choice came from a file in your folder or from memory.
 
 ## Steps
 
 ### 1. Set up the folder (10 min)
 
-Work in a new folder outside the workshop repo, so Claude can't find anything in `tracks/` by searching up the folder tree.
+Work in a new folder outside the workshop repo, so Claude can't find anything in the repo by searching up the folder tree.
 
 ```
 mkdir -p ~/poc/data/raw ~/poc/data/clean ~/poc/code ~/poc/output/logs ~/poc/notes ~/poc/literature
-cp -R claude-code-research-workshop/.claude ~/poc/
-cp claude-code-research-workshop/CLAUDE.md ~/poc/
+cp -R ~/Documents/claude-code-research-workshop/.claude ~/poc/
 ```
 
-Change the `claude-code-research-workshop/` part to wherever you cloned the repo.
-
-Put your data file and codebook in `~/poc/data/raw/`. For the example, from the repo folder:
-
-```
-cp tracks/2-proof-of-concept/examples/data/* ~/poc/data/raw/
-cp tracks/2-proof-of-concept/examples/CLAUDE.md ~/poc/CLAUDE.md
-```
-
-That gives you `data.csv` (one row per restaurant), `codebook.txt`, and the two questionnaires, `survey_wave1.txt` and `survey_wave2.txt`. Copy only `data/` and `CLAUDE.md` from the examples folder, not `idea.md`; you'll write your own idea in step 2.
+Put your data file and codebook in `~/poc/data/raw/`.
 
 Then make the raw data read-only, in your own terminal (the kit's hook would block Claude from running this):
 
@@ -45,7 +34,7 @@ Then make the raw data read-only, in your own terminal (the kit's hook would blo
 chmod -R a-w ~/poc/data/raw
 ```
 
-If you're using your own data, open `~/poc/CLAUDE.md` and replace the jail project with yours: the question, the data files, what one row is, and anything you already know about the data that a newcomer would get wrong. Keep the Rules section. Then start Claude from the folder:
+Write `~/poc/CLAUDE.md` yourself: the question, the data files, what one row is, and anything you already know about the data that a newcomer would get wrong. Add a short Rules section, for example: print the row count after every filter or merge, and never report a number that wasn't computed from a file in this project. Then start Claude from the folder:
 
 ```
 cd ~/poc
@@ -62,8 +51,6 @@ Write `notes/idea.md` by hand, not with Claude. Three short parts:
 - The data: which file, which rows, which years.
 - The one number that would tell you whether to continue, and what value would make you stop. Write the stop rule down now, before you see the number.
 
-For the example, you can start from `tracks/2-proof-of-concept/examples/idea.md` and change the stop rule to your own. The number is the change in average full-time-equivalent employment per restaurant from wave 1 to wave 2, in State A minus State B (a difference-in-differences).
-
 ### 3. Referee the idea (7 min)
 
 Type:
@@ -76,20 +63,22 @@ The referee lists the 3 most serious problems (identification, data, and whether
 
 Things to check in the report:
 
-- It should say "not checked" on whether the idea is new, because `literature/` is empty. If it says the idea is new or has been done, and names papers, it's working from memory. For the example, if it names a specific published study, write down which one: it recognized the data from memory, and in step 5 you should watch the plan for choices copied from that study.
+- It should say "not checked" on whether the idea is new, because `literature/` is empty. If it says the idea is new or has been done, and names papers, it's working from memory.
 - Each problem should come with evidence that would fix it. Pick the one or two that you could deal with today and add a line to `notes/idea.md` about each. Leave the rest for a full project.
 
 This is principle 3 (question everything): an agent with one job and a list of what to look for.
 
 ### 4. Run the proof of concept up to the plan (20 min)
 
-The `/proof-of-concept` skill runs six steps: profile the data, write a plan, referee the plan, compute, replicate, report. I want to read the plan before any number is computed (principle 0), so ask it to stop after the referee. For the example, type:
+The `/proof-of-concept` skill runs six steps: profile the data, write a plan, referee the plan, compute, replicate, report. I want to read the plan before any number is computed (principle 0), so ask it to stop after the referee. Type, with your own question and file names:
 
 ```
-/proof-of-concept Did State A's minimum wage increase reduce employment at fast-food restaurants? Data: data/raw/data.csv, with data/raw/codebook.txt and the questionnaires data/raw/survey_wave1.txt and data/raw/survey_wave2.txt. Stop after step 3 and wait for me before computing anything.
+/proof-of-concept <your question> Data: data/raw/<your data file>, with data/raw/<your codebook>. Stop after step 3 and wait for me before computing anything.
 ```
 
-For your own project, change the question and the file. Here's what Claude does:
+Claude and its agents will ask before running commands like `python3`, `head` and `wc`; this step can bring about 20 of these requests. Read each one, and choose "Yes, and don't ask again" for `python3` so the agents aren't stuck waiting for you.
+
+Here's what Claude does:
 
 1. The `data-profiler` agent reads the codebook and the data and writes `notes/data_report_<file>.md`: what one row is, what each column means, missing values, anything that could make a simple sum wrong, and whether the set of units changes over time. It describes the data and doesn't analyze it.
 2. The main session writes `notes/poc_plan.md`: the number, the exact rows and filters, what one unit is, how to avoid counting a unit twice, which units to compare, and the checks the result must pass.
@@ -97,9 +86,9 @@ For your own project, change the question and the file. Here's what Claude does:
 
 Read the data report first. Check that:
 
-- The row count matches the codebook (410 restaurants for the example).
-- It read the questionnaires, not only the codebook. For the example, the codebook gives one line per employment column; the questionnaire says exactly what was asked. If the report never mentions `survey_wave1.txt`, ask: `Read survey_wave1.txt and survey_wave2.txt and add to the data report what each employment question asks.`
-- It lists the restaurants that closed or refused the wave-2 interview, with counts, and says what their wave-2 employment columns contain.
+- The row count matches the codebook.
+- It read all the documentation you put in `data/raw/`, not only the codebook. If it never mentions a file, ask it to read that file and add what it says to the data report.
+- It lists the units that drop out or have missing values in a later period, with counts, and says what their columns contain.
 
 ### 5. Read and edit the plan yourself (15 min)
 
@@ -113,18 +102,11 @@ For each choice in notes/poc_plan.md, give the file and the line or question num
 
 Anything marked "not from the data", or that cites a published study or "the standard approach", came from memory. That isn't always wrong, but you should know it and decide it yourself.
 
-For the example, the plan has to answer these questions. Decide each one, and write your reason:
-
-- Full-time equivalent: how much does a part-time worker count for, and what's your basis for that number?
-- Who counts as an employee: full-time and part-time workers only, or managers too? Read questions 1 and 2 in `survey_wave1.txt`.
-- Restaurants that closed before the wave-2 interview: dropped, or kept with zero employment? Their wave-2 employment is blank in `data.csv`, so either way is a choice.
-- Which restaurants go into the average: every restaurant with data in each wave, or only those with data in both?
-
-For your own project, the questions are the ones the data report raised: what one unit is, what to do with repeated or missing rows, and which units to compare.
+The plan has to answer the questions the data report raised: what one unit is, what to do with repeated or missing rows, and which units to compare. Decide each one, and write your reason.
 
 Write each decision in `notes/decisions.md`, by hand: what you chose, what you rejected, and why (principle 5). Then edit `notes/poc_plan.md` to match, or tell Claude exactly what to change. If you changed anything that matters, run the referee again: `Use the referee agent on notes/poc_plan.md`.
 
-What usually goes wrong here: the plan reads fine and you approve it without checking it against the questionnaire. In my 40 one-shot runs on this same data, 10 of 40 made a different choice about who counts as an employee than the original study did, and every run made at least one choice the codebook doesn't spell out.
+What usually goes wrong here: the plan reads fine and you approve it without checking it against the documentation. In my 40 one-shot runs on one minimum wage dataset, 10 of 40 made a different choice about who counts as an employee than the original study did, and every run made at least one choice the codebook doesn't spell out.
 
 ### 6. Compute and replicate (12 min)
 
@@ -138,7 +120,7 @@ Claude writes `code/poc.py`, logs the row count after each step to `output/logs/
 
 Check:
 
-- `output/logs/poc_log.txt`: do the row counts match the data report and the checks in the plan? For the example, start at 410 and follow every drop.
+- `output/logs/poc_log.txt`: do the row counts match the data report and the checks in the plan? Start at the full row count and follow every drop.
 - `replication/numbers.json` against `output/poc_numbers.json`. If they matched, that's two scripts written from the same plan giving the same number. It tells you the plan is clear. It doesn't tell you the plan is right; that was your job in step 5.
 - If they didn't match, read Claude's explanation. Usually the plan was vague about one step and the two agents read it differently. Fix the plan, not the code, and rerun from step 4.
 
@@ -146,7 +128,7 @@ This is principle 4 (report or change, never both): the profiler, referee and re
 
 ### 7. Check the number yourself (13 min)
 
-Don't take the number from the report. Open `output/poc_numbers.json`, then compute the same number your own way: in Stata, R, or a few lines of Python you write yourself, from `data/raw/` and your decisions in `notes/decisions.md`. Ten minutes is enough for a difference of four means.
+Don't take the number from the report. Open `output/poc_numbers.json`, then compute the same number your own way: in Stata, R, or a few lines of Python you write yourself, from `data/raw/` and your decisions in `notes/decisions.md`. Ten minutes is enough for a simple comparison of means.
 
 Also check one thing by eye. Pick two or three rows in the raw data and work out by hand what each should add to the number.
 
@@ -161,12 +143,10 @@ Write `notes/decision.md` by hand:
 - What's still rough, and the one thing you'd do first in a full project.
 - The referee objections you're leaving open, and why.
 
-For the example only: I'll show the original study's number at the end of the session, along with the numbers you get from the common alternative choices. Save `notes/decision.md` before then. If your number differs, find which of your four decisions in step 5 explains the gap, and add to `notes/decision.md` whether you'd still make that choice.
-
 ## If you finish early
 
-- Run it again in a fresh folder (copy `data/raw/`, `CLAUDE.md` and `.claude/`, plus your `notes/decisions.md`), and add a line to `CLAUDE.md`: `Read notes/decisions.md before writing any plan.` Run `/proof-of-concept` without stopping and see whether the plan now matches your decisions without you editing it.
-- Change the question on the same data. For the example: "Did the price of a meal rise more in State A than in State B?" (a medium soda, small fries and the main item). When you read the plan, check which stores it drops because a price changes a lot between the two surveys, and why.
+- Run it again in a fresh folder. Copy `.claude/` from `~/Documents/claude-code-research-workshop`, and copy your own `data/raw/`, `CLAUDE.md` and `notes/decisions.md` from `~/poc`. Add a line to `CLAUDE.md`: `Read notes/decisions.md before writing any plan.` Run `/proof-of-concept` without stopping and see whether the plan now matches your decisions without you editing it.
+- Change the question on the same data. When you read the plan, check which rows it drops and why.
 
 ## Finished when
 

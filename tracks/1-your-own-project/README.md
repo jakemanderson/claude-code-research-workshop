@@ -7,10 +7,9 @@ I'd start every new project this way now. Claude starts every session knowing no
 ## Before you start
 
 - Claude Code installed and working: `claude` starts and you can type a message. If not, sort this out first or ask for help right away.
-- The workshop folder downloaded. These steps assume it's at `~/claude-code-research-workshop`. If you put it somewhere else, change that part of each command.
+- The workshop folder downloaded to `~/Documents/claude-code-research-workshop`. In a terminal, run `cd ~/Documents`, then `git clone https://github.com/jakemanderson/claude-code-research-workshop.git`. If you put it somewhere else, change that part of each command.
 - One of your own projects: a folder with at least one data file and anything else you have (code, notes, a draft). Pick a project you're actively working on, and a copy of it is fine if you're nervous.
 - One real task for that project you'd otherwise do this week, small enough to finish in 20 minutes. Cleaning one data file, making one table, or merging two files are all good.
-- No project with you, or the data can't leave a secure server? Use the example project `examples/messy_project/` in this track folder (planned, not in the folder yet). It's the Vera county jail file from the talk, set up the way a real project folder ends up after a few months: files all in one place, a script called `analysis_FINAL_v2.py`, notes mixed in with data. Copy it out of the workshop folder before you start, so Claude doesn't also read the workshop's own CLAUDE.md: `cp -r ~/claude-code-research-workshop/tracks/1-your-own-project/examples/messy_project ~/messy_project`. Its task is the one from the talk: compute the number of people in US jails in 2019 and 2020 and the percent change.
 
 On a Mac or Linux, everything below works as written. The hook that protects raw data needs `jq` (check with `jq --version`; on a Mac, `brew install jq`). On Windows, the `chmod` and hook steps are different; pair up with someone or skip to step 4 and come back.
 
@@ -77,7 +76,7 @@ ls -a
 If there's no `.claude` folder, copy the kit's:
 
 ```
-cp -r ~/claude-code-research-workshop/.claude .
+cp -R ~/Documents/claude-code-research-workshop/.claude .
 ```
 
 If you already have one, copy only the agents and the hook (`.claude/agents/` and `.claude/hooks/`) and add the `deny` list and the `hooks` entry from the kit's `.claude/settings.json` into yours by hand.
@@ -105,7 +104,7 @@ You want to see the edit blocked, with a message about raw data. If Claude edits
 
 ### 4. Write CLAUDE.md (20 min)
 
-Use the blank template in `examples/CLAUDE_template.md` (planned). It has four parts, each with prompts to answer:
+Your CLAUDE.md needs four parts:
 
 - Project: the question in one or two lines.
 - Folders: where things are, and what's off limits.
@@ -118,10 +117,10 @@ First, get a draft from Claude:
 /init
 ```
 
-`/init` reads the folder and writes a first CLAUDE.md. For research projects it usually writes a summary of the code and misses what matters: the question, the data's problems, what's off limits. So rewrite it against the template:
+`/init` reads the folder and writes a first CLAUDE.md. For research projects it usually writes a summary of the code and misses what matters: the question, the data's problems, what's off limits. So have Claude rewrite it with the four parts:
 
 ```
-Rewrite CLAUDE.md using the four parts in ~/claude-code-research-workshop/tracks/1-your-own-project/examples/CLAUDE_template.md. Keep only what you can see in this folder. Where you'd be guessing, write TODO instead. Keep it under 40 lines.
+Rewrite CLAUDE.md with four headings: Project (the question in one or two lines), Folders (where things are and what's off limits), Data notes (what one row is, known problems), Rules (4 to 6 rules I can check). Keep only what you can see in this folder. Where you'd be guessing, write TODO instead. Keep it under 40 lines.
 ```
 
 Then open `CLAUDE.md` in your own editor and fill in the TODOs. You know things Claude can't see: the question, which file is the real one, which variable is broken. Delete anything vague or wrong.
@@ -154,13 +153,11 @@ Test the file in a fresh session:
 What rules do you follow in this project? What's in data/raw/, and what are you not allowed to do with it?
 ```
 
-If the answer is missing something you wrote, the line is probably too vague or too long. Fix it and ask again.
-
-Compare yours with the filled-in example in `examples/CLAUDE_example.md` (planned). If you're on the example project, do this after you've written your own, since the example lists the data problems you'd otherwise find yourself.
+If the answer is missing something you wrote, the line is probably too vague or too long. Fix it and ask again. A good line names the file or column and the exact problem: "In survey.csv, age uses 999 for missing" works better than "Watch out for missing values."
 
 ### 5. Write the plan yourself (10 min)
 
-Principle 0: plan first, in detail. Write `notes/my_plan.md` for your task in your own editor. The template in `examples/plan_template.md` (planned) has the headings from the talk:
+Principle 0: plan first, in detail. Write `notes/my_plan.md` for your task in your own editor, with these headings from the talk:
 
 - Goal: what you want and why.
 - Read first: the exact files.
@@ -172,7 +169,7 @@ Principle 0: plan first, in detail. Write `notes/my_plan.md` for your task in yo
 - Out of scope: what not to do.
 - Stop and ask me if: the cases where you want to decide.
 
-Ten minutes on this saves you from reading a long plan from Claude and trying to spot what it assumed. If you're on the example project, a filled-in plan is on the "Plan first" slide; try writing your own before you look at it.
+Ten minutes on this saves you from reading a long plan from Claude and trying to spot what it assumed.
 
 ### 6. Plan mode (10 min)
 
@@ -190,7 +187,7 @@ Check the plan against this list:
 - What it won't touch.
 - How you'll know it worked: the checks from your plan, with numbers.
 
-Then tell it what to change, in plain language, and look at the new plan. Ctrl+G opens the plan in your editor if it's easier to edit it there. Most plans need two or three rounds. On the example project, the thing to look for is whether it sums every row in a year: that counts a county up to four times, and it's the first mistake from Part 4 of the talk.
+Then tell it what to change, in plain language, and look at the new plan. Ctrl+G opens the plan in your editor if it's easier to edit it there. Most plans need two or three rounds.
 
 What goes wrong: the plan is vague ("clean the data", "handle missing values"). Ask "which rows exactly?" until it says. Or it adds steps you didn't ask for, like a regression. Tell it they're out of scope.
 
@@ -198,7 +195,7 @@ What goes wrong: the plan is vague ("clean the data", "handle missing values"). 
 
 Approve the plan. Claude now writes the script in `code/`, runs it, and writes to `data/clean/` or `output/`. Then check:
 
-- The script is in `code/` and runs again from start to finish: `python code/01_clean.py` (or however your project runs). Every number should come from a script, not from something Claude typed into the terminal once.
+- The script is in `code/` and runs again from start to finish: `python3 code/01_clean.py` (or however your project runs). Every number should come from a script, not from something Claude typed into the terminal once.
 - The row counts in the log in `output/logs/` match what the plan said to expect. If they don't, ask why before anything else.
 - Your checks passed. Ask: `For each check in notes/my_plan.md, say pass or fail and show the number.`
 - `data/raw/` didn't change. If you made the backup in step 3: `diff -r data/raw ~/backup_my_project_raw` should print nothing.
